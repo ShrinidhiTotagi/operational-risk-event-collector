@@ -19,5 +19,5 @@ spring:
       path: /h2-console   
 
 jwt:
-  secret: testsecret
+  secret: dGhpcyBpcyBhIHZlcnkgc2VjdXJlIHNlY3JldCBrZXkgZm9yIGp3dCB0b2tlbg==
   expiration: 3600000

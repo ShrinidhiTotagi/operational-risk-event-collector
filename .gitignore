@@ -1,0 +1,32 @@
+# Environment files
+.env
+
+# Java
+target/
+*.jar
+*.war
+*.class
+
+# Node
+node_modules/
+dist/
+.npm
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db

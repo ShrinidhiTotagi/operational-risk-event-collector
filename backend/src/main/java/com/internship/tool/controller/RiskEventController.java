@@ -1,180 +1,75 @@
 package com.internship.tool.controller;
 
-import com.internship.tool.dto.ApiResponse;
-import com.internship.tool.dto.RiskEventRequest;
-import com.internship.tool.dto.RiskEventResponse;
-import com.internship.tool.dto.RiskEventFilterRequest;
+import com.internship.tool.entity.RiskEvent;
 import com.internship.tool.service.RiskEventService;
-
-import jakarta.validation.Valid;
-
-import org.springframework.data.domain.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-// Swagger imports (ONLY THESE)
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/risk-events")
-@Tag(name = "Risk Events", description = "APIs for managing risk events")
-@SecurityRequirement(name = "bearerAuth")
+@RequestMapping("/api/events")
+@RequiredArgsConstructor
+@Tag(name = "Risk Events", description = "Risk Event Management APIs")
+@CrossOrigin(origins = "*") // For development
 public class RiskEventController {
 
-    private final RiskEventService service;
+    private final RiskEventService riskEventService;
 
-    public RiskEventController(RiskEventService service) {
-        this.service = service;
-    }
-
-    // ✅ CREATE
-    @Operation(summary = "Create risk event", description = "Create a new risk event (ADMIN only)")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "201",
-            description = "RiskEvent created successfully"
-    )
-    @PostMapping
-    public ResponseEntity<ApiResponse<RiskEventResponse>> create(
-            @Valid @RequestBody RiskEventRequest request) {
-
-        RiskEventResponse res = service.createRiskEvent(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponse.<RiskEventResponse>builder()
-                        .success(true)
-                        .message("RiskEvent created successfully")
-                        .data(res)
-                        .build()
-        );
-    }
-
-    // ✅ GET ALL
-    @Operation(summary = "Get all risk events", description = "Fetch all risk events")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Fetched successfully"
-    )
     @GetMapping
-    public ResponseEntity<ApiResponse<List<RiskEventResponse>>> getAll() {
-
-        return ResponseEntity.ok(
-                ApiResponse.<List<RiskEventResponse>>builder()
-                        .success(true)
-                        .message("Fetched all risk events")
-                        .data(service.getAllRiskEvents())
-                        .build()
-        );
-    }
-
-    // 🔥 PAGINATION + SORT
-    @Operation(summary = "Get paginated risk events", description = "Fetch risk events with pagination and sorting")
-    @GetMapping("/paged")
-    public ResponseEntity<ApiResponse<Page<RiskEventResponse>>> getAllPaged(
+    @Operation(summary = "Get all risk events with pagination")
+    public ResponseEntity<Page<RiskEvent>> getAllEvents(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort
-    ) {
-
-        String[] sortParams = sort.split(",");
-        Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
-                ? Sort.Direction.ASC
-                : Sort.Direction.DESC;
-
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(direction, sortParams[0])
-        );
-
-        return ResponseEntity.ok(
-                ApiResponse.<Page<RiskEventResponse>>builder()
-                        .success(true)
-                        .message("Fetched paginated & sorted risk events")
-                        .data(service.getAllWithPagination(pageable))
-                        .build()
-        );
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "occurredAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+            
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(riskEventService.getAllEvents(pageable));
     }
 
-    // 🔥 SEARCH
-    @Operation(summary = "Search risk events", description = "Filter risk events using multiple criteria")
-    @PostMapping("/search")
-    public ResponseEntity<ApiResponse<Page<RiskEventResponse>>> search(
-            @RequestBody RiskEventFilterRequest filter,
+    @GetMapping("/search")
+    @Operation(summary = "Search risk events")
+    public ResponseEntity<Page<RiskEvent>> searchEvents(
+            @RequestParam String q,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort
-    ) {
-
-        String[] sortParams = sort.split(",");
-        Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
-                ? Sort.Direction.ASC
-                : Sort.Direction.DESC;
-
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(direction, sortParams[0])
-        );
-
-        return ResponseEntity.ok(
-                ApiResponse.<Page<RiskEventResponse>>builder()
-                        .success(true)
-                        .message("Fetched filtered & sorted risk events")
-                        .data(service.search(filter, pageable))
-                        .build()
-        );
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("occurredAt").descending());
+        return ResponseEntity.ok(riskEventService.searchEvents(q, pageable));
     }
 
-    // ✅ GET BY ID
-    @Operation(summary = "Get risk event by ID", description = "Fetch a specific risk event")
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<RiskEventResponse>> getById(@PathVariable Long id) {
-
-        return ResponseEntity.ok(
-                ApiResponse.<RiskEventResponse>builder()
-                        .success(true)
-                        .message("RiskEvent fetched successfully")
-                        .data(service.getById(id))
-                        .build()
-        );
+    @Operation(summary = "Get a risk event by ID")
+    public ResponseEntity<RiskEvent> getEventById(@PathVariable UUID id) {
+        return ResponseEntity.ok(riskEventService.getEventById(id));
     }
 
-    // ✅ UPDATE
-    @Operation(summary = "Update risk event", description = "Update an existing risk event (ADMIN only)")
+    @PostMapping
+    @Operation(summary = "Create a new risk event")
+    public ResponseEntity<RiskEvent> createEvent(@RequestBody RiskEvent riskEvent) {
+        return new ResponseEntity<>(riskEventService.createEvent(riskEvent), HttpStatus.CREATED);
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<RiskEventResponse>> update(
-            @PathVariable Long id,
-            @Valid @RequestBody RiskEventRequest request) {
-
-        RiskEventResponse updated = service.updateRiskEvent(id, request);
-
-        return ResponseEntity.ok(
-                ApiResponse.<RiskEventResponse>builder()
-                        .success(true)
-                        .message("RiskEvent updated successfully")
-                        .data(updated)
-                        .build()
-        );
+    @Operation(summary = "Update an existing risk event")
+    public ResponseEntity<RiskEvent> updateEvent(@PathVariable UUID id, @RequestBody RiskEvent riskEvent) {
+        return ResponseEntity.ok(riskEventService.updateEvent(id, riskEvent));
     }
 
-    // ✅ DELETE
-    @Operation(summary = "Delete risk event", description = "Delete a risk event (ADMIN only)")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> delete(@PathVariable Long id) {
-
-        service.deleteRiskEvent(id);
-
-        return ResponseEntity.ok(
-                ApiResponse.<String>builder()
-                        .success(true)
-                        .message("RiskEvent deleted successfully")
-                        .data(null)
-                        .build()
-        );
+    @Operation(summary = "Soft delete a risk event")
+    public ResponseEntity<Void> deleteEvent(@PathVariable UUID id) {
+        riskEventService.deleteEvent(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,28 +1,63 @@
-server:
-  port: 8081
-
 spring:
+  application:
+    name: risk-event-collector
+
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: ""
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/risk_events_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+    open-in-view: false
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console   
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
 
-jwt:
-  secret: testsecret
-  expiration: 3600000
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:your_email@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:your_app_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:this_is_a_fallback_secret_key_for_development_purposes_only_replace_me}
+    expiration-ms: 86400000 # 24 hours
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
 
 logging:
   level:
-    root: INFO
     com.internship.tool: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: ERROR

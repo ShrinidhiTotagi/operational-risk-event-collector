@@ -1,0 +1,12 @@
+Analyze the following operational risk event.
+
+Title: {title}
+Category: {category}
+Description: {description}
+
+Please provide a JSON response with the following structure:
+{{
+  "score": <integer from 0-100 indicating risk severity based on description (100 is most severe)>,
+  "analysis": "<string explaining the rationale for the score and key risk indicators>",
+  "suggested_actions": ["<string action 1>", "<string action 2>"]
+}}

@@ -1,51 +1,64 @@
 package com.internship.tool.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "risk_events")
-@Getter
-@Setter
+@Table(name = "risk_event")
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@ToString
 public class RiskEvent {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String title;
 
-    @Column(length = 1000)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false, length = 50)
+    private String status;
+
+    @Column(nullable = false, length = 50)
+    private String severity;
+
+    @Column(nullable = false, length = 100)
     private String category;
 
-    private String severity; // LOW, MEDIUM, HIGH
+    @Column(name = "occurred_at", nullable = false)
+    private LocalDateTime occurredAt;
 
-    private String status;   // OPEN, CLOSED, IN_PROGRESS
-
-    @Column(name = "ai_description", length = 2000)
-    private String aiDescription;
-
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // ✅ Set timestamps automatically
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+    @Column(name = "created_by", length = 100)
+    private String createdBy;
 
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    @Column(name = "ai_score")
+    private Integer aiScore;
+
+    @Column(name = "ai_analysis", columnDefinition = "TEXT")
+    private String aiAnalysis;
+
+    @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
+    private Boolean isDeleted = false;
 }

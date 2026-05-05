@@ -40,17 +40,15 @@ public class OperationalRiskEventService {
         this.objectMapper = objectMapper;
     }
 
-    @Cacheable(value = "events", key = "#page + '-' + #size + '-' + #status + '-' + #category + '-' + #dateFrom + '-' + #dateTo + '-' + #search")
     public PagedResponse<EventResponse> list(int page, int size, String status, String category,
                                               LocalDate dateFrom, LocalDate dateTo, String search) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageable = PageRequest.of(page, size);
         Page<OperationalRiskEvent> result = repository.findAllFiltered(
                 emptyToNull(status), emptyToNull(category), dateFrom, dateTo, emptyToNull(search), pageable);
         List<EventResponse> content = result.getContent().stream().map(mapper::toResponse).toList();
         return new PagedResponse<>(content, page, size, result.getTotalElements(), result.getTotalPages());
     }
 
-    @Cacheable(value = "event", key = "#id")
     public EventResponse getById(UUID id) {
         return mapper.toResponse(findActive(id));
     }

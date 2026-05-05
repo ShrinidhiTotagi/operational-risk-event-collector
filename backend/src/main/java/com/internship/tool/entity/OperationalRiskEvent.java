@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,8 +26,7 @@ public class OperationalRiskEvent {
     @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(columnDefinition = "text")
-    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(columnDefinition = "varchar(10485760)")
     private String description;
 
     @Column(nullable = false, length = 20)
@@ -77,20 +77,16 @@ public class OperationalRiskEvent {
     @Column(name = "closure_date")
     private LocalDate closureDate;
 
-    @Column(name = "root_cause", columnDefinition = "text")
-    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "root_cause", columnDefinition = "varchar(10485760)")
     private String rootCause;
 
-    @Column(name = "control_failures", columnDefinition = "text")
-    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "control_failures", columnDefinition = "varchar(10485760)")
     private String controlFailures;
 
-    @Column(columnDefinition = "text")
-    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(columnDefinition = "varchar(10485760)")
     private String kri;
 
-    @Column(name = "action_plan", columnDefinition = "text")
-    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "action_plan", columnDefinition = "varchar(10485760)")
     private String actionPlan;
 
     @Column(nullable = false)

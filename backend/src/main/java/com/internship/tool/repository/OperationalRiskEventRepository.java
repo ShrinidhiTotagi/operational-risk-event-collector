@@ -15,18 +15,29 @@ import java.util.UUID;
 
 public interface OperationalRiskEventRepository extends JpaRepository<OperationalRiskEvent, UUID> {
 
-    Optional<OperationalRiskEvent> findByIdAndDeletedFalse(UUID id);
+    @Query(value = "SELECT * FROM operational_risk_event WHERE id = CAST(:id AS uuid) AND deleted = false", nativeQuery = true)
+    Optional<OperationalRiskEvent> findByIdAndDeletedFalse(@Param("id") UUID id);
 
-    @Query("""
-        SELECT e FROM OperationalRiskEvent e
+    @Query(value = """
+        SELECT * FROM operational_risk_event e
         WHERE e.deleted = false
-          AND (:status IS NULL OR e.status = :status)
-          AND (:category IS NULL OR e.category = :category)
-          AND (:dateFrom IS NULL OR e.incidentDate >= :dateFrom)
-          AND (:dateTo IS NULL OR e.incidentDate <= :dateTo)
-          AND (:search IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%'))
-               OR LOWER(e.description) LIKE LOWER(CONCAT('%', :search, '%')))
-        """)
+          AND (CAST(:status AS varchar) IS NULL OR e.status = :status)
+          AND (CAST(:category AS varchar) IS NULL OR e.category = :category)
+          AND (CAST(:dateFrom AS date) IS NULL OR e.incident_date >= CAST(:dateFrom AS date))
+          AND (CAST(:dateTo AS date) IS NULL OR e.incident_date <= CAST(:dateTo AS date))
+          AND (CAST(:search AS varchar) IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%')))
+        ORDER BY e.created_at DESC
+        """,
+        countQuery = """
+        SELECT COUNT(*) FROM operational_risk_event e
+        WHERE e.deleted = false
+          AND (CAST(:status AS varchar) IS NULL OR e.status = :status)
+          AND (CAST(:category AS varchar) IS NULL OR e.category = :category)
+          AND (CAST(:dateFrom AS date) IS NULL OR e.incident_date >= CAST(:dateFrom AS date))
+          AND (CAST(:dateTo AS date) IS NULL OR e.incident_date <= CAST(:dateTo AS date))
+          AND (CAST(:search AS varchar) IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%')))
+        """,
+        nativeQuery = true)
     Page<OperationalRiskEvent> findAllFiltered(
         @Param("status") String status,
         @Param("category") String category,
@@ -69,16 +80,16 @@ public interface OperationalRiskEventRepository extends JpaRepository<Operationa
         """, nativeQuery = true)
     List<Object[]> lossAmountByMonth();
 
-    @Query("""
-        SELECT e FROM OperationalRiskEvent e
+    @Query(value = """
+        SELECT * FROM operational_risk_event e
         WHERE e.deleted = false
-          AND (:status IS NULL OR e.status = :status)
-          AND (:category IS NULL OR e.category = :category)
-          AND (:dateFrom IS NULL OR e.incidentDate >= :dateFrom)
-          AND (:dateTo IS NULL OR e.incidentDate <= :dateTo)
-          AND (:search IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%')))
-        ORDER BY e.createdAt DESC
-        """)
+          AND (CAST(:status AS varchar) IS NULL OR e.status = :status)
+          AND (CAST(:category AS varchar) IS NULL OR e.category = :category)
+          AND (CAST(:dateFrom AS date) IS NULL OR e.incident_date >= CAST(:dateFrom AS date))
+          AND (CAST(:dateTo AS date) IS NULL OR e.incident_date <= CAST(:dateTo AS date))
+          AND (CAST(:search AS varchar) IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%')))
+        ORDER BY e.created_at DESC
+        """, nativeQuery = true)
     List<OperationalRiskEvent> findAllForExport(
         @Param("status") String status,
         @Param("category") String category,

@@ -1,12 +1,26 @@
-Analyze the following operational risk event.
+You are an expert operational risk analyst at a financial institution. Analyze the following risk event thoroughly.
 
 Title: {title}
 Category: {category}
+Severity: {severity}
+Status: {status}
 Description: {description}
 
-Please provide a JSON response with the following structure:
+Respond ONLY with a valid JSON object using this exact structure:
 {{
-  "score": <integer from 0-100 indicating risk severity based on description (100 is most severe)>,
-  "analysis": "<string explaining the rationale for the score and key risk indicators>",
-  "suggested_actions": ["<string action 1>", "<string action 2>"]
+  "score": <integer 0-100, risk severity score>,
+  "risk_level": "<LOW | MEDIUM | HIGH | CRITICAL>",
+  "likelihood": "<RARE | UNLIKELY | POSSIBLE | LIKELY | ALMOST_CERTAIN>",
+  "impact": "<NEGLIGIBLE | MINOR | MODERATE | MAJOR | CATASTROPHIC>",
+  "analysis": "<2-3 sentence rationale explaining the score, key risk indicators, and business impact>",
+  "root_causes": ["<root cause 1>", "<root cause 2>", "<root cause 3>"],
+  "suggested_actions": [
+    {{"priority": "IMMEDIATE", "action": "<action to take within 24 hours>"}},
+    {{"priority": "SHORT_TERM", "action": "<action to take within 1 week>"}},
+    {{"priority": "LONG_TERM", "action": "<action to take within 1 month>"}}
+  ],
+  "regulatory_flags": ["<relevant regulation or compliance concern if any, else empty list>"],
+  "estimated_resolution_days": <integer, estimated days to resolve>,
+  "similar_risk_patterns": "<brief description of common industry patterns this resembles>",
+  "confidence": <integer 0-100, confidence in this analysis>
 }}

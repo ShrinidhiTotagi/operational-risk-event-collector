@@ -52,8 +52,14 @@ export const eventService = {
 };
 
 export const aiService = {
-  analyze: (title, description, category) => 
-    aiApi.post('/analyze', { title, description, category })
+  analyze: (title, description, category, severity, status) =>
+    aiApi.post('/analyze', { title, description, category, severity, status }),
+
+  chat: (event, history, message) =>
+    aiApi.post('/chat', { event, history, message }),
+
+  batchAnalyze: (events) =>
+    aiApi.post('/batch-analyze', { events })
 };
 
 export default api;
